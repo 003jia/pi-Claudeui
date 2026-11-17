@@ -46,7 +46,7 @@
     wrapper.append(element("summary", "", `${title} · ${count}`));
     for (const item of items) {
       const row = element("div", "context-group-row");
-      const name = element("span", "button-label", fileNames ? item.name.split("/").at(-1) : item.name);
+      const name = element("span", "button-label", fileNames ? fileName(item.name) : item.name);
       name.title = item.name;
       row.append(name, element("span", "", short(item.tokens)));
       wrapper.append(row);

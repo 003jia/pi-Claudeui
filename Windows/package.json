@@ -1,0 +1,38 @@
+{
+  "name": "pi-claudeui",
+  "version": "1.5.0",
+  "private": true,
+  "description": "Pi desktop client for Windows",
+  "author": "pi-Claudeui contributors",
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "mammoth": "1.13.0",
+    "unpdf": "2.2.1"
+  },
+  "devDependencies": {
+    "electron": "45.3.3",
+    "electron-builder": "26.18.0",
+    "playwright": "1.62.0"
+  },
+  "build": {
+    "appId": "local.pi-desktop",
+    "productName": "Pi",
+    "files": ["*.mjs", "preload.cjs"],
+    "extraResources": [
+      { "from": "../Resources/Web", "to": "Web" },
+      { "from": "../Resources/Engine", "to": "Engine" }
+    ],
+    "win": { "icon": "Pi.ico", "target": "nsis" },
+    "artifactName": "pi-Claudeui-Windows-x64-Setup.${ext}",
+    "nsis": {
+      "perMachine": false,
+      "runAfterFinish": false,
+      "createDesktopShortcut": true
+    }
+  }
+}

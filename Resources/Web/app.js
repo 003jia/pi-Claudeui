@@ -17,7 +17,8 @@ const attachmentLimit = 4;
 const imageModelMessage = "当前模型只接收文字。请选择支持图片输入的模型，附件会留在这里。";
 
 function host(action, fields = {}) {
-  return window.webkit.messageHandlers.piHost.postMessage({ action, ...fields });
+  const channel = window.piWin ?? window.webkit.messageHandlers.piHost;
+  return channel.postMessage({ action, ...fields });
 }
 
 function rpc(type, fields = {}, timeout = 30000) {
@@ -74,7 +75,9 @@ function controls() {
 }
 
 function showFolder() {
-  const display = state.folder === state.home ? "个人文件夹" : state.folder.startsWith(state.home + "/")
+  const folderKey = comparablePath(state.folder);
+  const homeKey = comparablePath(state.home);
+  const display = folderKey === homeKey ? "个人文件夹" : folderKey.startsWith(homeKey + "/")
     ? "~" + state.folder.slice(state.home.length) : state.folder;
   ui["folder-label"].textContent = display;
   ui.folder.title = state.folder;
@@ -280,7 +283,7 @@ async function openConversation(folder, session = null) {
     state.sessionDirectory = launch.sessionDirectory;
     showFolder();
     const details = await rpc("get_state", {}, 45000);
-    await window.piComposer.connect(launch.permissionExtension);
+    await window.piComposer.connect(launch.permissionExtension, launch.nativeSandbox !== false);
     const messages = session ? await loadMessages() : [];
     state.connected = true;
     state.model = details.model;
@@ -690,6 +693,13 @@ window.piDesktop = {
   }
 };
 
+window.piWin?.receive((name, data) => window.piDesktop[name]?.(data));
+if (windowsDesktop) {
+  document.documentElement.dataset.platform = "windows";
+  for (const key of document.querySelectorAll("kbd")) key.textContent = key.textContent.replace("⌘", "Ctrl+");
+  document.getElementById("modifier-enter-label").textContent = "Ctrl + 回车";
+}
+
 function sidebar(show, focus = true) {
   ui.layout.classList.toggle("sidebar-collapsed", !show);
   ui["hide-sidebar"].hidden = !show;
@@ -711,8 +721,9 @@ ui["model-filter"].addEventListener("input", renderModels);
 ui.reconnect.addEventListener("click", () => openConversation(state.folder, state.opened));
 ui.prompt.addEventListener("input", resizePrompt);
 ui.prompt.addEventListener("keydown", event => {
-  const shortcut = window.piSettings.sendsOnEnter() ? !event.metaKey : event.metaKey;
-  if (event.key === "Enter" && shortcut && !event.shiftKey && !event.altKey && !event.ctrlKey &&
+  const modifier = windowsDesktop ? event.ctrlKey : event.metaKey;
+  const shortcut = (window.piSettings.sendsOnEnter() ? !modifier : modifier) && (windowsDesktop ? !event.metaKey : !event.ctrlKey);
+  if (event.key === "Enter" && shortcut && !event.shiftKey && !event.altKey &&
       !event.isComposing && event.keyCode !== 229) {
     event.preventDefault();
     if (!state.busy) send();

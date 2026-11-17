@@ -1,5 +1,10 @@
 "use strict";
 
+const windowsDesktop = Boolean(window.piWin);
+const desktopPath = path => windowsDesktop ? path.replace(/\\/g, "/") : path;
+const comparablePath = path => windowsDesktop ? desktopPath(path).toLowerCase() : path;
+const fileName = path => desktopPath(path).split("/").filter(Boolean).at(-1);
+
 const icons = {
   panel: "M4 5h16v14H4z M9 5v14",
   panelRight: "M4 5h16v14H4z M15 5v14",

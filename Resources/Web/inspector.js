@@ -62,7 +62,7 @@
     const path = document.getElementById("inspector-path");
     path.textContent = folder;
     path.title = folder;
-    document.getElementById("inspector-folder").textContent = folder.split("/").filter(Boolean).at(-1) || "/";
+    document.getElementById("inspector-folder").textContent = fileName(folder) || "/";
     changes.clear();
     deliverables.clear();
     entries("inspector-changes", changes, "还没有记录的文件改动");
@@ -70,8 +70,11 @@
   }
 
   function workspaceFile(path) {
+    path = desktopPath(path);
     if (!path || path.startsWith("~") || /[\u0000\r\n]/.test(path) || path.split("/").includes("..")) return null;
-    if (path.startsWith("/") && state.folder !== "/" && !path.startsWith(state.folder.replace(/\/$/, "") + "/")) return null;
+    const absolute = path.startsWith("/") || (windowsDesktop && /^[A-Za-z]:\//.test(path));
+    const folder = comparablePath(state.folder).replace(/\/$/, "") + "/";
+    if (absolute && !comparablePath(path).startsWith(folder)) return null;
     return path;
   }
 
@@ -79,7 +82,7 @@
     if (tool !== "write" && tool !== "edit") return;
     const file = typeof path === "string" && workspaceFile(path);
     if (!file || changes.has(file)) return;
-    changes.set(file, file.split("/").at(-1));
+    changes.set(file, fileName(file));
     entries("inspector-changes", changes, "还没有记录的文件改动");
   }
 
@@ -87,12 +90,13 @@
     let updated = false;
     marked.walkTokens(marked.lexer(text), token => {
       if (token.type !== "link" || !token.href || /^(?:\/\/|#)/.test(token.href)) return;
-      if (/^[a-z][a-z0-9+.-]*:/i.test(token.href) && !token.href.startsWith("file:///")) return;
-      const path = token.href.replace(/^file:\/\//, "");
+      const drivePath = windowsDesktop && /^[a-z]:[/\\]/i.test(token.href);
+      if (/^[a-z][a-z0-9+.-]*:/i.test(token.href) && !drivePath && !token.href.startsWith("file:///")) return;
+      const path = token.href.replace(/^file:\/\/\//i, windowsDesktop ? "" : "/");
       let file;
       try { file = workspaceFile(decodeURIComponent(path)); } catch { return; }
       if (!file || deliverables.has(file)) return;
-      deliverables.set(file, token.text || file.split("/").at(-1));
+      deliverables.set(file, token.text || fileName(file));
       updated = true;
     });
     if (updated) entries("inspector-deliverables", deliverables, "暂无交付文件");

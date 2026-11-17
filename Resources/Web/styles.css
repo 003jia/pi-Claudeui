@@ -105,6 +105,7 @@ kbd { margin-left: auto; color: var(--quiet); font: 11px/1 -apple-system, sans-s
 }
 #conversation-title { max-width: 244px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-actions { display: flex; align-items: center; gap: 5px; margin-left: auto; }
+[data-platform="windows"] .topbar { padding-left: 13px; }
 .inspector-button { white-space: nowrap; }
 .inspector-button[aria-expanded="true"] { background: var(--hover); color: var(--ink); }
 .sidebar-collapsed .sidebar { display: none; }

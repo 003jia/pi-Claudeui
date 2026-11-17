@@ -18,6 +18,7 @@
   let openMenu = null;
   let selectedMode = null;
   let modeAvailable = false;
+  let nativeSandbox = true;
   let changing = false;
 
   function sync() {
@@ -44,14 +45,16 @@
     if (response?.disposition !== "handled" || selectedMode !== mode) throw new Error("Pi 未应用该权限模式。");
   }
 
-  async function connect(path) {
+  async function connect(path, sandboxAvailable = true) {
     const { commands } = await rpc("get_commands");
     const supports = name => commands.some(command =>
-      command.name === name && command.source === "extension" && command.sourceInfo?.path === path);
+      command.name === name && command.source === "extension" && typeof command.sourceInfo?.path === "string" &&
+      comparablePath(command.sourceInfo.path) === comparablePath(path));
+    nativeSandbox = sandboxAvailable;
     modeAvailable = supports(modeCommand);
     window.piContext.connect(supports(window.piContext.command));
     if (!modeAvailable) throw new Error("Pi 未加载桌面权限模式。");
-    await applyMode("auto");
+    await applyMode(nativeSandbox ? "auto" : "manual");
   }
 
   function handleStatus(event) {
@@ -103,13 +106,19 @@
   }
 
   function showModes() {
-    fields["mode-options"].replaceChildren(...Object.entries(modes).map(([mode, [label, description]]) =>
-      choice(label, mode === "auto" && state.folder === state.home
-        ? "内置工具在 macOS 沙箱内自动执行。个人文件夹只读，选择项目后可写。"
-        : description, mode === selectedMode, () => {
+    fields["mode-options"].replaceChildren(...Object.entries(modes).map(([mode, [label, description]]) => {
+      const unavailable = mode === "auto" && !nativeSandbox;
+      if (unavailable) description = "需要 macOS 自动沙箱。Windows 可使用手动确认。";
+      else if (mode === "auto" && comparablePath(state.folder) === comparablePath(state.home)) {
+        description = "内置工具在 macOS 沙箱内自动执行。个人文件夹只读，选择项目后可写。";
+      }
+      const button = choice(label, description, mode === selectedMode, () => {
         if (mode === selectedMode) close(true);
         else void change(() => applyMode(mode));
-      })));
+      });
+      button.disabled = unavailable;
+      return button;
+    }));
   }
 
   async function showThinking() {

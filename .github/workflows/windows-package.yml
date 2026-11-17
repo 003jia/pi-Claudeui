@@ -1,0 +1,44 @@
+name: Windows package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Windows/**'
+      - 'Resources/**'
+      - '.github/workflows/windows-package.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: Windows/package-lock.json
+      - name: Install packaging dependencies
+        run: npm ci --prefix Windows
+      - name: Install Pi CLI for the smoke test
+        run: npm install --global --ignore-scripts @earendil-works/pi-coding-agent@1.4.0
+      - name: Build Windows x64 installer
+        run: npm run dist --prefix Windows -- --publish never
+      - name: Verify the installed application
+        shell: pwsh
+        run: |
+          $installer = (Resolve-Path 'Windows/dist/pi-Claudeui-Windows-x64-Setup.exe').Path
+          $installPath = Join-Path $env:RUNNER_TEMP 'pi-install-check'
+          $result = Start-Process -FilePath $installer -ArgumentList '/S', "/D=$installPath" -Wait -PassThru
+          if ($result.ExitCode -ne 0) { throw "Pi installer exited with $($result.ExitCode)" }
+          node Windows/test/smoke.mjs (Join-Path $installPath 'Pi.exe')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pi-Claudeui-Windows-x64
+          path: Windows/dist/pi-Claudeui-Windows-x64-Setup.exe
+          if-no-files-found: error

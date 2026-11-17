@@ -10,6 +10,7 @@ const modeCommand = "pi-desktop-tool-mode";
 const modes = new Set(["auto", "manual", "accept-edits", "plan", "bypass"]);
 const readTools = new Set(["read", "grep", "find", "ls"]);
 const fileTools = new Set(["edit", "write"]);
+const nativeSandbox = process.platform === "darwin";
 
 function describeCall({ toolName, input }) {
   const target = input.command || input.path;
@@ -17,7 +18,7 @@ function describeCall({ toolName, input }) {
 }
 
 export default function permissions(pi) {
-  let mode = "auto";
+  let mode = nativeSandbox ? "auto" : "manual";
   let setupError;
   let scratch;
   let bundleLocation;
@@ -29,6 +30,7 @@ export default function permissions(pi) {
     try {
       const installation = await loadPiSDK();
       registerContextDetails(pi, installation.sdk.DEFAULT_COMPACTION_SETTINGS);
+      if (!nativeSandbox) return;
       const active = new Set(pi.getActiveTools());
       const settings = pi.getSettings();
       const shellPath = settings.shellPath?.replace(/^~(?=\/)/, homedir());
@@ -69,7 +71,7 @@ export default function permissions(pi) {
       }
     } catch (error) {
       setupError = error.message;
-      ctx.ui.notify("Pi 沙箱未能初始化。自动模式将拦截无法隔离的内置工具。", "warning");
+      if (nativeSandbox) ctx.ui.notify("Pi 沙箱未能初始化。自动模式将拦截无法隔离的内置工具。", "warning");
     }
   });
 
@@ -83,7 +85,7 @@ export default function permissions(pi) {
     description: "Set the current Pi Desktop tool permission mode",
     handler: async (requested, ctx) => {
       const next = requested.trim();
-      if (modes.has(next) && ctx.isIdle()) mode = next;
+      if (modes.has(next) && (nativeSandbox || next !== "auto") && ctx.isIdle()) mode = next;
       ctx.ui.setStatus(modeCommand, mode);
     }
   });
@@ -121,7 +123,7 @@ export default function permissions(pi) {
     const builtin = registered === "builtin:" + name;
     if (mode === "auto" && wrapped) return;
     if (mode === "plan") {
-      if (wrapped && readTools.has(name)) return;
+      if ((wrapped || (!nativeSandbox && builtin)) && readTools.has(name)) return;
       return { block: true, reason: "计划模式只允许读取。请先给出计划，等用户切换模式后再执行。" };
     }
     if (mode === "auto" && builtin) {

@@ -40,6 +40,7 @@
   text-align: left;
 }
 .composer-choice:hover, .composer-choice[aria-pressed="true"] { background: var(--hover); }
+.composer-choice:disabled { color: var(--muted); background: transparent; }
 .composer-choice > span:first-child { min-width: 0; }
 .composer-choice small { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; }
 .composer-choice .selection-mark { display: grid; place-items: center; align-self: center; flex: none; color: var(--clay); }

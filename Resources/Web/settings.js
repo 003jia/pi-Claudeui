@@ -35,7 +35,7 @@
     root.dataset.replyFont = preferences.replyFont ?? "serif";
     root.dataset.codeSize = preferences.codeSize ?? "12";
     document.getElementById("prompt-shortcut").textContent = preferences.sendShortcut === "command-enter"
-      ? "Command 加回车发送，回车换行。" : "回车发送，Shift 加回车换行。";
+      ? (windowsDesktop ? "Ctrl" : "Command") + " 加回车发送，回车换行。" : "回车发送，Shift 加回车换行。";
     for (const field of formFields) {
       const value = preferences[field.dataset.preference];
       if (value === undefined) continue;
