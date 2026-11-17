@@ -1,0 +1,8 @@
+/.build/
+/.swiftpm/
+/.claude/
+/.pi/
+*.app/
+.DS_Store
+.env
+.env.*

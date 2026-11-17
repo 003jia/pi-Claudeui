@@ -1,0 +1,98 @@
+.composer-toolbar { container-type: inline-size; }
+.composer-toolbar .folder { max-width: 34%; }
+.composer-toolbar .model-picker { max-width: 40%; flex-shrink: 1; }
+.composer-picker { position: relative; flex: none; }
+.composer-option, .context-button { white-space: nowrap; }
+.composer-option[aria-expanded="true"], .context-button[aria-expanded="true"] { background: var(--active); }
+
+.composer-popover {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: calc(100% + 8px);
+  max-height: min(350px, 48vh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 5px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid #e4e0da;
+  border-radius: 11px;
+  box-shadow: 0 8px 28px #35261b23;
+}
+.composer-popover h2 {
+  margin: 0;
+  padding: 6px 8px 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+.thinking-menu { width: 155px; }
+.mode-menu { width: min(290px, calc(100vw - 50px)); }
+.composer-choice {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  text-align: left;
+}
+.composer-choice:hover, .composer-choice[aria-pressed="true"] { background: var(--hover); }
+.composer-choice > span:first-child { min-width: 0; }
+.composer-choice small { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; }
+.composer-choice .selection-mark { display: grid; place-items: center; align-self: center; flex: none; color: var(--clay); }
+.composer-option-message { margin: 0; padding: 6px 8px; color: var(--muted); font-size: 12px; }
+
+.context-button {
+  min-width: 74px;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.context-track {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eae7e2;
+}
+.context-button .context-track { width: 35px; }
+.context-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: #2678d3; }
+.context-fill[data-near-limit="true"] { background: #a33a29; }
+.context-menu { width: min(364px, calc(100vw - 46px)); max-height: min(468px, 70vh); padding: 9px 13px 11px; border-radius: 14px; }
+.context-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; padding: 5px 0; }
+.context-heading h2 { padding: 0; }
+#context-total { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.context-stack { display: flex; background: #ececec; }
+.context-segment { flex: 0 1 auto; min-width: 0; }
+.context-dot, .context-segment { background: var(--category-color, #868686); }
+[data-kind="messages"] { --category-color: #2678d3; }
+[data-kind="mcp"] { --category-color: #ef7035; }
+[data-kind="tools"] { --category-color: #08ac91; }
+[data-kind="prompt"] { --category-color: #efa400; }
+[data-kind="buffer"] { --category-color: #b9b9b9; }
+[data-kind="free"] { --category-color: #ececec; }
+.context-dot { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+.context-rows { margin: 7px 0; }
+.context-row { display: grid; grid-template-columns: minmax(0, 1fr) 41px 42px; align-items: baseline; gap: 8px; padding: 3px 0; font-size: 12.5px; }
+.context-row dt { display: flex; align-items: center; min-width: 0; gap: 6px; }
+.context-row dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.context-count { color: var(--muted); }
+.context-group { padding: 4px 0; color: var(--muted); font-size: 12px; }
+.context-group summary { cursor: pointer; }
+.context-group-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 2px 2px 15px; }
+.context-actions, .context-footer { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-top: 9px; }
+.context-footer { padding-top: 9px; border-top: 1px solid var(--line); }
+.context-caption, .context-footer > span { margin: 0; color: var(--muted); font-size: 11.5px; }
+.context-actions button, .context-footer button { flex: none; font-size: 12px; }
+.context-actions button:disabled { color: #807d78; background: #f7f7f7; }
+
+.extension-dialog #dialog-text { max-height: 42vh; overflow: auto; overflow-wrap: anywhere; }
+
+@container (max-width: 474px) {
+  .composer-toolbar .folder .button-label { display: none; }
+  .composer-toolbar .text-button { padding-inline: 5px; gap: 3px; }
+  .context-button { min-width: 64px; }
+  .context-button .context-track { width: 28px; }
+}

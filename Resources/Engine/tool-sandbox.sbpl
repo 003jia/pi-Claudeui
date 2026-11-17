@@ -1,0 +1,34 @@
+(version 1)
+(deny default)
+
+(allow process-exec process-fork)
+(allow process-info* signal (target same-sandbox))
+(allow sysctl-read)
+(allow file-read-metadata file-test-existence)
+(allow mach-lookup (global-name "com.apple.system.opendirectoryd.libinfo"))
+
+; Only these paths are readable. The SDK and command runtimes are read-only.
+(allow file-read* file-map-executable
+  (subpath "/System/Library")
+  (subpath "/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld")
+  (subpath "/Library/Apple")
+  (subpath "/Library/Developer/CommandLineTools")
+  (subpath "/bin") (subpath "/sbin")
+  (subpath "/usr/bin") (subpath "/usr/sbin") (subpath "/usr/lib") (subpath "/usr/share") (subpath "/usr/libexec")
+  (subpath "/opt/homebrew/bin") (subpath "/opt/homebrew/Cellar") (subpath "/opt/homebrew/lib") (subpath "/opt/homebrew/opt")
+  (subpath "/usr/local/bin") (subpath "/usr/local/lib") (subpath "/usr/local/Cellar") (subpath "/usr/local/opt")
+  (subpath (param "ENGINE")) (subpath (param "MODULES")) (literal (param "NODE")) (subpath (param "NODE_LIB"))
+  (subpath (param "PI_BIN")) (subpath (param "SCRATCH"))
+  (require-all
+    (subpath (param "WORKSPACE"))
+    (require-not (regex #"/[.]([Ss][Ss][Hh]|[Aa][Ww][Ss]|[Gg][Nn][Uu][Pp][Gg]|[Pp][Ii]|[Cc][Oo][Dd][Ee][Xx])(/|$)"))))
+
+(allow file-read*
+  (literal "/")
+  (literal "/dev/random") (literal "/dev/urandom")
+  (literal "/opt/homebrew/etc/openssl@3/openssl.cnf")
+  (literal "/usr/local/etc/openssl@3/openssl.cnf")
+  (literal "/private/etc/localtime") (literal "/private/etc/passwd") (literal "/private/etc/group")
+  (subpath "/private/var/db/timezone"))
+(allow file-read* file-write-data (literal "/dev/null") (literal "/dev/zero"))
+(allow file-write* (subpath (param "SCRATCH")))
